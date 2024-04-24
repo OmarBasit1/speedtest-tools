@@ -20,14 +20,15 @@ import sys
 extracts_url = 'https://intelligence.speedtest.net/extracts'
 
 # Please replace MyApiKey and MyApiSecret below with your organization's API key.
-username = 'my_api_key'
-password = 'my_api_secret'
+username = 'xx'
+password = 'yy'
 
 # By default, the script stores the extract files in the directory where the script is running
 # To specify a storage directory, change this value to a string represting the directory where
 # the files should be stored.
 # Example: storageDir = '/data/ookla/extracts'
-storageDir = os.getcwd()
+# storageDir = os.getcwd()
+storageDir = "/export5/obasit/ookla_raw_data"
 
 opener = compatible_urllib.build_opener()
 compatible_urllib.install_opener(opener)
@@ -66,15 +67,15 @@ def sort_files_and_directories(contents, files={}):
             subdir = extracts_url + entry['url']
             sub_files = json.loads(compatible_urllib.urlopen(subdir).read())
             sort_files_and_directories(sub_files, files)
-
+    
     return files
 
 # determine if file should be downloaded - check for new datasets and most current file for exisiting datasets
 def filter(data_file, files):
     # identify the dataset by the file name prefix
-    dataset = data_file['name'][:data_file['name'].index('_20')]
-    if dataset not in files or data_file['mtime'] > files[dataset]['age']:
-        files[dataset] = {'name': data_file['name'], 'url': data_file['url'], 'age': data_file['mtime']}
+    dataset = data_file['name']#[:data_file['name'].index('_20')]
+    # if dataset not in files or data_file['mtime'] > files[dataset]['age']:
+    files[dataset] = {'name': data_file['name'], 'url': data_file['url'], 'age': data_file['mtime']}
 
 def download(files):
     if not files:
@@ -82,11 +83,14 @@ def download(files):
         return
 
     for data_set, file in files.items():
-        response = compatible_urllib.urlopen(file['url'])
-        flocation = storageDir + '/' + file['name']
-        print(("Downloading: %s" % (file['name'])))
-        with open(flocation, 'wb') as content:
-            content.write(response.read())
+        try:
+            response = compatible_urllib.urlopen(file['url'])
+            flocation = storageDir + '/' + file['name']
+            print(("Downloading: %s" % (file['name'])))
+            with open(flocation, 'wb') as content:
+                content.write(response.read())
+        except:
+            print("error in: ", file['name'])
 #############################################################
 files = sort_files_and_directories(content)
 download(files)
